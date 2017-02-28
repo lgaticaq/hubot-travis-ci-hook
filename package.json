@@ -1,0 +1,52 @@
+{
+  "name": "hubot-travis-ci-hook",
+  "version": "0.0.0",
+  "description": "Clone travis integration with slack",
+  "main": "src",
+  "scripts": {
+    "pretest": "coffeelint src test",
+    "test": "mocha --compilers coffee:coffee-script/register --require coffee-coverage/register-istanbul",
+    "posttest": "istanbul report text-summary lcov",
+    "coveralls": "coveralls < coverage/lcov.info",
+    "codeclimate": "codeclimate-test-reporter < coverage/lcov.info",
+    "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags && npm publish",
+    "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags && npm publish",
+    "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags && npm publish"
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/lgaticaq/hubot-travis-ci-hook.git"
+  },
+  "keywords": [
+    "hubot",
+    "hubot-scripts",
+    "travis",
+    "slack",
+    "webhook"
+  ],
+  "author": "Leonardo Gatica <lgatica@protonmail.com> (https://about.me/lgatica)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lgaticaq/hubot-travis-ci-hook/issues"
+  },
+  "homepage": "https://github.com/lgaticaq/hubot-travis-ci-hook#readme",
+  "dependencies": {
+    "parse-ms": "^1.0.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "codeclimate-test-reporter": "^0.4.1",
+    "coffee-coverage": "^2.0.1",
+    "coffee-script": "^1.12.4",
+    "coffeelint": "^1.16.0",
+    "coveralls": "^2.11.16",
+    "generate-changelog": "^1.1.0",
+    "hubot-test-helper": "^1.5.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.2.0",
+    "nock": "^9.0.7"
+  }
+}
