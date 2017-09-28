@@ -4,17 +4,16 @@
   "description": "Clone travis integration with slack",
   "main": "src",
   "scripts": {
-    "pretest": "coffeelint src test",
-    "test": "mocha --compilers coffee:coffee-script/register --require coffee-coverage/register-istanbul",
-    "posttest": "istanbul report text-summary lcov",
-    "coveralls": "coveralls < coverage/lcov.info",
-    "codeclimate": "codeclimate-test-reporter < coverage/lcov.info",
+    "lint": "eslint . --fix",
+    "format": "prettier-standard 'src/**/*.js' 'test/**/*.js'",
+    "pretest": "npm run lint -s && npm run format -s",
+    "test": "istanbul cover _mocha",
     "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags && npm publish",
     "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags && npm publish",
     "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags && npm publish"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">=6"
   },
   "repository": {
     "type": "git",
@@ -34,19 +33,42 @@
   },
   "homepage": "https://github.com/lgaticaq/hubot-travis-ci-hook#readme",
   "dependencies": {
-    "parse-ms": "^1.0.1"
+    "parse-ms": "1.0.1"
   },
   "devDependencies": {
     "chai": "4.1.2",
-    "codeclimate-test-reporter": "0.5.0",
-    "coffee-coverage": "2.0.1",
     "coffee-script": "1.12.7",
-    "coffeelint": "1.16.0",
-    "coveralls": "2.13.2",
+    "eslint": "4.7.2",
+    "eslint-config-standard": "10.2.1",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-node": "5.2.0",
+    "eslint-plugin-promise": "3.5.0",
+    "eslint-plugin-standard": "3.0.1",
     "generate-changelog": "1.5.0",
     "hubot-test-helper": "1.7.0",
     "istanbul": "0.4.5",
     "mocha": "3.5.3",
-    "nock": "9.0.22"
+    "nock": "9.0.22",
+    "prettier-standard": "7.0.1"
+  },
+  "eslintConfig": {
+    "extends": "standard",
+    "env": {
+      "mocha": true
+    },
+    "rules": {
+      "no-console": [
+        "error"
+      ]
+    }
+  },
+  "eslintIgnore": [
+    "coverage"
+  ],
+  "renovate": {
+    "automerge": "minor",
+    "extends": [
+      ":library"
+    ]
   }
 }

@@ -1,7 +1,5 @@
 # hubot-travis-ci-hook
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/lgaticaq/hubot-travis-ci-hook.svg)](https://greenkeeper.io/)
-
 [![npm version](https://img.shields.io/npm/v/hubot-travis-ci-hook.svg?style=flat-square)](https://www.npmjs.com/package/hubot-travis-ci-hook)
 [![npm downloads](https://img.shields.io/npm/dm/hubot-travis-ci-hook.svg?style=flat-square)](https://www.npmjs.com/package/hubot-travis-ci-hook)
 [![Build Status](https://img.shields.io/travis/lgaticaq/hubot-travis-ci-hook.svg?style=flat-square)](https://travis-ci.org/lgaticaq/hubot-travis-ci-hook)
