@@ -42,16 +42,10 @@ const verifySignature = (signature, payload, publicKey) => {
   return verifier.verify(publicKey, signature, 'base64')
 }
 
-const getPublicKey = robot => {
+const request = (robot, uri) => {
   return new Promise((resolve, reject) => {
-    let url
-    if (process.env.TRAVIS_PRO === 'true') {
-      url = 'https://api.travis-ci.com/config'
-    } else {
-      url = 'https://api.travis-ci.org/config'
-    }
     robot
-      .http(url)
+      .http(uri)
       .header('User-Agent', robot.name)
       .get()((err, res, body) => {
         if (err) {
@@ -60,8 +54,7 @@ const getPublicKey = robot => {
           return reject(new Error(`Error response code ${res.statusCode}`))
         } else {
           try {
-            const data = JSON.parse(body)
-            return resolve(data.config.notifications.webhook.public_key)
+            return resolve(JSON.parse(body))
           } catch (err) {
             return reject(err)
           }
@@ -70,30 +63,23 @@ const getPublicKey = robot => {
   })
 }
 
+const getPublicKey = robot => {
+  const domain = process.env.TRAVIS_PRO === 'true' ? '.com' : '.org'
+  const uri = `https://api.travis-ci${domain}/config`
+  return request(robot, uri).then(data => {
+    return data.config.notifications.webhook.public_key
+  })
+}
+
 const getAuthor = (robot, owner, name, sha) => {
-  return new Promise((resolve, reject) => {
-    robot
-      .http(`https://api.github.com/repos/${owner}/${name}/commits/${sha}`)
-      .header('User-Agent', robot.name)
-      .get()((err, res, body) => {
-        if (err) {
-          return reject(err)
-        } else if (res.statusCode !== 200) {
-          return reject(new Error(`Error response code ${res.statusCode}`))
-        } else {
-          try {
-            const data = JSON.parse(body)
-            return resolve({
-              name: data.commit.author.name,
-              url: data.author.html_url,
-              avatar: data.author.avatar_url,
-              commit: data.html_url
-            })
-          } catch (err) {
-            return reject(err)
-          }
-        }
-      })
+  const uri = `https://api.github.com/repos/${owner}/${name}/commits/${sha}`
+  return request(robot, uri).then(data => {
+    return {
+      name: data.commit.author.name,
+      url: data.author.html_url,
+      avatar: data.author.avatar_url,
+      commit: data.html_url
+    }
   })
 }
 
@@ -256,36 +242,29 @@ module.exports = robot => {
     const channel = req.params.room
     getAttachments(robot, req)
       .then(results => {
-        if (results.isValid) {
-          if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
-            if (process.env.TRAVIS_SHORT === 'true') {
-              robot.adapter.client.web.chat.postMessage(
-                `#${channel}`,
-                null,
-                results.short
-              )
-              res.send('Ok')
-            } else {
-              robot.adapter.client.web.chat.postMessage(
-                `#${channel}`,
-                null,
-                results.full
-              )
-              res.send('Ok')
-            }
+        if (!results.isValid) return
+        if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
+          if (process.env.TRAVIS_SHORT === 'true') {
+            robot.adapter.client.web.chat.postMessage(
+              `#${channel}`,
+              null,
+              results.short
+            )
+            res.send('Ok')
           } else {
-            robot.messageRoom(channel, results.fallback)
+            robot.adapter.client.web.chat.postMessage(
+              `#${channel}`,
+              null,
+              results.full
+            )
             res.send('Ok')
           }
         } else {
-          const err = new Error('Signed payload does not match signature')
-          robot.messageRoom(channel, `An error has occurred: ${err.message}`)
-          robot.emit('error', err)
-          res.send('Error')
+          robot.messageRoom(channel, results.fallback)
+          res.send('Ok')
         }
       })
       .catch(err => {
-        robot.messageRoom(channel, `An error has occurred: ${err.message}`)
         robot.emit('error', err)
         res.send('Error')
       })

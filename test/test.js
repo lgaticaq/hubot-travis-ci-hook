@@ -1,6 +1,6 @@
 'use strict'
 
-require('coffee-script/register')
+const { describe, it, beforeEach, afterEach } = require('mocha')
 const Helper = require('hubot-test-helper')
 const { expect } = require('chai')
 const http = require('http')
@@ -43,16 +43,6 @@ describe('travis-ci', function () {
       Signature: signature
     }
   }
-  const postOptionsError = {
-    hostname: 'localhost',
-    port: 8080,
-    path: '/travis-ci/random',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(postData)
-    }
-  }
 
   beforeEach(() => {
     this.room = helper.createRoom({ name: 'random' })
@@ -60,7 +50,7 @@ describe('travis-ci', function () {
 
   afterEach(() => this.room.destroy())
 
-  context('POST /travis-ci/random', () => {
+  describe('POST /travis-ci/random', () => {
     beforeEach(done => {
       process.env.TRAVIS_PRO = 'false'
       process.env.TRAVIS_SHORT = 'false'
@@ -164,7 +154,7 @@ describe('travis-ci', function () {
     })
   })
 
-  context('POST /travis-ci/random short notification', () => {
+  describe('POST /travis-ci/random short notification', () => {
     beforeEach(done => {
       process.env.TRAVIS_PRO = 'true'
       process.env.TRAVIS_SHORT = 'true'
@@ -239,7 +229,7 @@ describe('travis-ci', function () {
     })
   })
 
-  context('Server error in travis api', () => {
+  describe('Server error in travis api', () => {
     beforeEach(done => {
       process.env.TRAVIS_PRO = 'false'
       process.env.TRAVIS_SHORT = 'false'
@@ -275,14 +265,11 @@ describe('travis-ci', function () {
     })
 
     it('responds with error', () => {
-      expect(this.room.messages).to.eql([
-        ['hubot', 'An error has occurred: something awful happened']
-      ])
       expect(this.apiError.message).to.eql('something awful happened')
     })
   })
 
-  context('Server wrong statusCode in travis api', () => {
+  describe('Server wrong statusCode in travis api', () => {
     beforeEach(done => {
       process.env.TRAVIS_PRO = 'false'
       process.env.TRAVIS_SHORT = 'false'
@@ -318,14 +305,11 @@ describe('travis-ci', function () {
     })
 
     it('responds with error', () => {
-      expect(this.room.messages).to.eql([
-        ['hubot', 'An error has occurred: Error response code 302']
-      ])
       expect(this.apiError.message).to.eql('Error response code 302')
     })
   })
 
-  context('Server error in github api', () => {
+  describe('Server error in github api', () => {
     beforeEach(done => {
       process.env.TRAVIS_PRO = 'false'
       process.env.TRAVIS_SHORT = 'false'
@@ -359,14 +343,11 @@ describe('travis-ci', function () {
     })
 
     it('responds with error', () => {
-      expect(this.room.messages).to.eql([
-        ['hubot', 'An error has occurred: something awful happened']
-      ])
       expect(this.apiError.message).to.eql('something awful happened')
     })
   })
 
-  context('Server wrong statusCode in github api', () => {
+  describe('Server wrong statusCode in github api', () => {
     beforeEach(done => {
       process.env.TRAVIS_PRO = 'false'
       process.env.TRAVIS_SHORT = 'false'
@@ -400,83 +381,7 @@ describe('travis-ci', function () {
     })
 
     it('responds with error', () => {
-      expect(this.room.messages).to.eql([
-        ['hubot', 'An error has occurred: Error response code 302']
-      ])
       expect(this.apiError.message).to.eql('Error response code 302')
-    })
-  })
-
-  context('Invalid signature', () => {
-    beforeEach(done => {
-      process.env.TRAVIS_PRO = 'false'
-      process.env.TRAVIS_SHORT = 'false'
-      nock('https://api.github.com')
-        .get(
-          '/repos/lgaticaq/tz-parser/commits/1ac902485e99fd4e3c95790f3858e552eb32867d'
-        )
-        .reply(
-          200,
-          JSON.stringify({
-            commit: {
-              author: { name: 'user' }
-            },
-            html_url:
-              'https://github.com/lgaticaq/tz-parser/commit/1ac902485e99fd4e3c95790f3858e552eb32867d',
-            author: {
-              avatar_url: 'https://avatars.githubusercontent.com/u/123456?v=3',
-              html_url: 'https://github.com/user'
-            }
-          })
-        )
-      nock('https://api.travis-ci.org')
-        .get('/config')
-        .reply(
-          200,
-          JSON.stringify({
-            config: {
-              notifications: {
-                webhook: {
-                  public_key: publicKey
-                }
-              }
-            }
-          })
-        )
-      this.room.robot.on('error', apiError => {
-        this.apiError = apiError
-        done()
-      })
-      const req = http.request(postOptionsError)
-      req.on('error', done)
-      req.write(postData)
-      req.end()
-    })
-
-    it('responds with error', () => {
-      expect(this.room.messages).to.eql([
-        [
-          'hubot',
-          'An error has occurred: Signed payload does not match signature'
-        ]
-      ])
-      expect(this.apiError.message).to.eql(
-        'Signed payload does not match signature'
-      )
     })
   })
 })
-
-// context "POST /travis-ci/deploy redirect", ->
-//   beforeEach (done) ->
-//     nock("https://api.github.com")
-//       .get("/repos/lgaticaq/tz-parser/commits/1234567")
-//       .reply(302)
-//     @room.robot.on "error", (@apiError) => done()
-//     req = http.request postOptions, (@response) => done()
-//     req.on "error", done
-//     req.write(postData)
-//     req.end()
-
-//   it "responds with status 200 and results", ->
-//     expect(@apiError.message).to.eql "Error response code 302"

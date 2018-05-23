@@ -7,13 +7,13 @@
     "lint": "eslint . --fix",
     "format": "prettier-standard 'src/**/*.js' 'test/**/*.js'",
     "pretest": "npm run lint -s && npm run format -s",
-    "test": "istanbul cover _mocha",
+    "test": "istanbul cover _mocha -- --exit",
     "release:major": "changelog -M && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version major && git push origin && git push origin --tags && npm publish",
     "release:minor": "changelog -m && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version minor && git push origin && git push origin --tags && npm publish",
     "release:patch": "changelog -p && git add CHANGELOG.md && git commit -m 'updated CHANGELOG.md' && npm version patch && git push origin && git push origin --tags && npm publish"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,6 @@
   },
   "devDependencies": {
     "chai": "4.1.2",
-    "coffee-script": "1.12.7",
     "eslint": "4.19.1",
     "eslint-config-standard": "11.0.0",
     "eslint-plugin-import": "2.12.0",
@@ -53,9 +52,6 @@
   },
   "eslintConfig": {
     "extends": "standard",
-    "env": {
-      "mocha": true
-    },
     "rules": {
       "no-console": [
         "error"
